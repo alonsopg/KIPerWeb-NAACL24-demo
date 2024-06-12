@@ -1,0 +1,987 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quizz Semantic Search Tool</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style type="text/css">
+    #card-serach-container.static {
+      position: fixed;
+      width: 100%;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 99;
+      padding-top: 0 !important;
+    }
+    #results-container.static {
+      padding-top: 275px !important;
+    }
+
+    #nav-pagination {
+      margin: auto;
+      width: fit-content;
+    }
+    #results .card-footer {
+      background-color: transparent;
+    }
+    #error {
+      color:  red;
+    }
+    .answer-list {
+      list-style-type: lower-alpha;
+    }
+    .border-left {
+      border-left: 1px solid #00000040;
+    }
+    .form-check.form-check-inline {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    .form-check.form-check-inline label {
+      cursor: pointer;
+    }
+    #text {
+      -webkit-transition: max-height 1s; 
+      -moz-transition: max-height 1s; 
+      -ms-transition: max-height 1s; 
+      -o-transition: max-height 1s; 
+      transition: max-height 1s;  
+      overflow: hidden;
+      max-height: 2000px;
+    }
+    .card-data {
+      cursor: pointer;
+    }
+    .border-success {
+      box-shadow: 3px 2px 9px 2px #898383;
+      background-color: #00800024;
+    }
+    .page-item{
+      cursor: pointer;
+    }
+    #fiters {display: none;}
+    .graph-container{
+      display: none !important;
+    }
+    .error .stars-container {
+      border: 1px solid red;
+      display: inline-block;
+    }
+    .form-control.error {
+      border: 1px solid red;
+    }
+    .stars-container {
+        margin-left: 25px;
+        /*margin-top: 15px;*/
+        display: inline-block;
+     }
+     .myTooltip {
+      cursor: pointer;
+     }
+     .border-error {
+      box-shadow: 3px 2px 9px 2px #ff000099;
+      background-color: #ff000029;
+    }
+    #submit { display: none; }
+    .queryTest { cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar bg-body-tertiary">
+    <div class="container-fluid">
+      <div>
+        <a class="navbar-brand" href="" target="_blank">
+          LORE LIPSUM
+        </a>
+        <a href=""><img src="https://www.designevo.com/res/templates/thumb_small/man-head-and-digital.webp" alt="Logo" width="30" height="24" class="d-inline-block align-text-top"></a>
+      </div>
+      <div>
+        <a href="" class="me-4"><img src="https://www.designevo.com/res/templates/thumb_small/man-head-and-digital.webp" alt="Logo" width="30" height="24" class="d-inline-block align-text-top"></a>
+        <button type="button" class="btn btn-outline-dark" id="logout">Log out</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container pt-1" id="card-serach-container">
+
+    <div id="text">
+      <p class="text-center fs-1">Question Search Tool</p>
+      <p class="text-start">Bitte geben Sie einen Suchtext in dem folgenden Textfeld ein. Das System wird dann die Fragen-Datenbank des bfz nach möglichst passenden Fragen durchsuchen. Sie können die Suchergebnisse ebenfalls nach Fragetyp (question type) und Antworttyp (answer type) filtern.</p>
+    </div>
+    
+    <div class="card card-serach mt-4">
+      <div class="card-body">
+        <div class="d-flex">
+          <input class="form-control me-2" type="search" placeholder="Bitte geben Sie Ihre Anfrage ein..." aria-label="Search" id="input-search">
+          <button class="btn btn-outline-primary" type="submit" id="search">Suchen</button>
+        </div>
+        <div class="mt-3">
+          <span class="badge rounded-pill text-bg-primary queryTest" data-queryTest="Query 1">Query 1</span>
+          <span class="badge rounded-pill text-bg-primary queryTest" data-queryTest="Query 2">Query 2</span>
+          <span class="badge rounded-pill text-bg-primary queryTest" data-queryTest="Query 3">Query 3</span>
+        </div>
+      
+      </div>
+      <div class="card-footer" id="fiters">
+        <p>
+          Filters
+        </p>
+        <div class="row ">
+          <!-- <div class="col-2">
+            <div class="row g-3 align-items-center">
+              <div class="col-auto">
+                <label for="question_type" class="col-form-label">Fragetyp</label>
+              </div>
+              <div class="col-12 mt-0">
+                <select class="form-select" aria-label="Default select example" name="question_type" id="question_type">
+                  
+                </select>
+              </div>
+            </div>
+          </div> -->
+          <div class="col-2">
+            <div class="row g-3 align-items-center">
+              <div class="col-auto">
+                <label for="answer_type" class="col-form-label">Fragetyp</label>
+              </div>
+              <div class="col-12 mt-0">
+                <select class="form-select" aria-label="Default select example" name="answer_type" id="answer_type">
+                  
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-2">
+            <div class="row g-3 align-items-center">
+              <div class="col-auto">
+                <label for="answer_type" class="col-form-label">Source</label>
+              </div>
+              <div class="col-12 mt-0">
+                <select class="form-select" aria-label="Default select example" name="answer_type" id="source_filters">
+                  
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-2">
+            <div class="row g-3 align-items-center">
+              <div class="col-auto">
+                <label for="answer_type" class="col-form-label">Topic</label>
+              </div>
+              <div class="col-12 mt-0">
+                <select class="form-select" aria-label="Default select example" name="answer_type" id="topic_filters">
+                  
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-4 text-center">
+            <button type="button" class="btn btn-outline-primary" id="apply-filter">Verwenden</button>
+            <button type="button" class="btn btn-outline-warning" id="clear-filter">Löschen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="container pt-4 pb-5" id="results-container">
+    <div class="row">
+
+      <div id="results">
+
+      </div>
+      <nav id="nav-pagination">
+        <ul class="pagination pagination-sm">
+          
+        </ul>
+      </nav>
+    </div>
+
+    <div class="row align-items-center">
+      <div class="col-12 text-center">
+        <p id="error" class="d-none">Um eine Prüfung herunterzuladen, wählen Sie bitte aus, welche Fragen Sie in die Prüfung einbeziehen möchten.</p>
+        <button type="button" class="btn btn-outline-success" id="submit">Gibt es nichts Relevantes? Vielen Dank für Ihr Feedback</button>
+      </div>
+      <div class="col-12 text-center mt-5">
+        <p class="text-start">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam posuere ultrices lacus, non tincidunt nulla varius in. Aenean eu dapibus ante, quis sagittis ligula. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Etiam pulvinar quam eget tristique euismod. </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalCards" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel">Seine Frage war: "<span id="query-popup"></span>" Bestätigen Sie Ihre Testartikelauswahl:</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+        </div>
+
+        <div class="modal-body">
+          <div class="form-floating">
+            <textarea class="form-control" placeholder="Leave a comment here" id="intent"></textarea>
+            <label for="intent">Was ist der Zweck oder die Absicht Ihres Quiz?</label>
+          </div>
+          <div class="modal-body-cards"></div>
+        </div>
+        <section class="col-12 mb-3 d-flex">
+          <p class="ms-3">Wie würden Sie die Qualität Ihrer Suchsitzung bewerten?:</p>
+          <div class="ontainer-question question ml">
+             <div class="stars-container">
+                <img class="star" data-id="1" src="./static/images/star-off.png"/>
+                <img class="star" data-id="2" src="./static/images/star-off.png"/>
+                <img class="star" data-id="3" src="./static/images/star-off.png"/>
+                <img class="star" data-id="4" src="./static/images/star-off.png"/>
+                <img class="star" data-id="5" src="./static/images/star-off.png"/>
+                <input class="value-stars" id="stars-value" name="stars-value"   hidden="">
+             </div>
+          </div>
+       </section>
+        <div class="modal-footer">
+          <div class="mx-auto">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Stornieren</button>
+            <button type="button" class="btn btn-primary" id="download">Beenden</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" ></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js" integrity="sha512-6HrPqAvK+lZElIZ4mZ64fyxIBTsaX5zAFZg2V/2WT+iKPrFzTzvx6QAsLW2OaLwobhMYBog/+bvmIEEGXi0p1w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script>
+    var char;
+    var isFormValid = true;
+    var dataJson = {};
+    var dataFiltered = {};
+    var query = '';
+    var totalFilters = '';
+    var startDate = new Date();
+    var idsArray = [];
+    var myModalEl = document.querySelector('#modalCards')
+    var modal = new bootstrap.Modal(myModalEl) // initialized with defaults
+    var elements = [];
+    var finallyElements = [];
+    var selectedCards = 0;
+    var browsedCards = [];
+
+  
+    // $(document).ready(function(){
+    //   if(localStorage.getItem("token") == '' || localStorage.getItem("token") == null){
+    //     location.href = './login.html';
+    //   }
+    // })
+
+    //Browsed cards
+    function getBrowsedCards() {
+      $.each($(".page:not(.d-none) .card"), function(index, item, i){
+          browsedCards.push($(item).attr('data-id'));
+      })
+    }
+
+    //Search
+    function search() {
+      char = null;
+      isFormValid = true;
+      dataJson = {};
+      dataFiltered = {};
+      query = '';
+      totalFilters = '';
+      startDate = new Date();
+      idsArray = [];
+      elements = [];
+      finallyElements = [];
+      browsedCards = [];
+
+      $('#text').css('max-height','0');
+      var queryValue = $('#input-search').val();
+      $('#error').addClass('d-none');
+      if(queryValue == 'null' || queryValue == '' ) {
+        $('#input-search').addClass('is-invalid');
+      } else {
+        $('#input-search').removeClass('is-invalid');
+        query = queryValue;
+        $('#query-popup').html(query);
+
+        var myHeaders = new Headers();
+        myHeaders.append("Access-Control-Allow-Origin", "*");
+        myHeaders.append("Access-Control-Request-Headers", "*");
+        myHeaders.append("Content-Type", "application/json");
+        myHeaders.append("x-access-token", localStorage.getItem("token"));
+
+        var raw = JSON.stringify({
+          "q": queryValue
+        });
+
+        var requestOptions = {
+          method: 'POST',
+          headers: myHeaders,
+          body: raw,
+          redirect: 'follow'
+        };
+
+        fetch("../retrieve", requestOptions)
+          .then(response => {
+            if (!response.ok) {
+             alert('Token missing or invalid, check your access token!');
+             location.href = './login.html';
+            }
+             return response.text();
+           }).then(data => {
+                  data = jQuery.parseJSON(data);
+                  $.each(data.search_output, function(index, item){
+                    dataJson[item.docid] = item;
+                    idsArray.push(item.docid)
+                  })
+                  // dataFiltered = data;
+                  $('#results').html('');
+                  filtersList(data.filter_data);
+                  paginationCards(dataJson);
+                  $('#submit').show();
+                })
+                .catch(error => {
+                  console.log('error')
+                  alert(error)
+                  $('#submit').hide();
+                });   
+
+       
+
+        }
+    }
+
+    $('#search').on('click', function(){
+      search();
+     })
+
+    $('#input-search').on('keydown', function (event) {
+      if ( event.which == 13 ) {
+       search();
+      }
+    })
+
+    //Query Test
+    $('.queryTest').on('click', function(argument) {
+      var value = $(this).data('querytest');
+      $('#input-search').val(value);
+    })
+
+    //Create filter list
+    function filtersList(data){
+      $('#fiters').show();
+      var answerList = '<option value="none">Wählen Sie eine Option aus</option>';
+      var questionList = '<option value="none">Wählen Sie eine Option aus</option>';
+      var sourceFilters = '<option value="none">Wählen Sie eine Option aus</option>';
+      var topicFilters = '<option value="none">Wählen Sie eine Option aus</option>';
+      $.each(data.answer_type_filters, function(index, item){
+        answerList = answerList + '<option value="'+item+'">'+item+'</option>'
+      }) 
+      $.each(data.question_type_filters, function(index, item){
+        questionList = questionList + '<option value="'+item+'">'+item+'</option>'
+      }) 
+      $.each(data.source_filters, function(index, item){
+        sourceFilters = sourceFilters + '<option value="'+item+'">'+item+'</option>'
+      }) 
+      $.each(data.topic_filters, function(index, item){
+        topicFilters = topicFilters + '<option value="'+item+'">'+item+'</option>'
+      }) 
+      $('#question_type').html(questionList);
+      $('#answer_type').html(answerList);
+      $('#source_filters').html(sourceFilters);
+      $('#topic_filters').html(topicFilters)
+    }
+
+    //NavBar scroll
+    $(document).on('scroll', function() {
+      var s = $(this).scrollTop();
+      var scroll_footer = $('.card-serach').position().top;
+      console.log('s', s)
+      console.log('scroll_footer',scroll_footer)
+      if ( s < 70) {
+        $('#results-container').removeClass('static');
+        $('#card-serach-container').removeClass('static');
+      } else {
+        $('#results-container').addClass('static');
+        $('#card-serach-container').addClass('static');
+      }
+    });
+
+    //Create html cards
+    function paginationCards(data){
+      var paginationResults = '<div class="page" data-page="1">';
+      var paginationNum = 1;
+      var counter = 0;
+      $('.pagination').html('');
+      $('.pagination').append('<li class="page-item active" data-pageNum="1"><span class="page-link">1</span></li>');
+      $.each(data, function(index, item, i) {
+        paginationResults = paginationResults + createHTMLcards(item)
+        if((counter+1)%10 == 0){
+          paginationNum = paginationNum + 1;
+          paginationResults = paginationResults + '</div><div class="page d-none" data-page="'+paginationNum+'">';
+          $('.pagination').append('<li class="page-item" data-pageNum="'+paginationNum+'"><span class="page-link">'+paginationNum+'</span></li>');
+        }
+        counter = counter+1;
+      })
+      paginationResults = paginationResults + '</div>';
+      $('#results').append(paginationResults);
+      graphicRate();
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+      getBrowsedCards();
+    }
+
+    function createHTMLcards(data) {
+      var answer = ''
+      var checked = data.isSelected ? 'checked' : '';
+      var checkedClass = data.isSelected ? 'border-success' : '';
+      var topics = '';
+      var topicSection = '';
+
+
+      $.each(data.related_topics, function(index, item) {
+            topics = topics + '<span class="badge rounded-pill text-bg-info">'+item+'</span>';
+          })
+      if(data.related_topics != null){
+        topicSection = '<p class="card-text">\
+                                <span class="fw-medium">Related Topics:</span> \
+                                '+topics+'\
+                              </p>'
+                            } 
+
+
+      
+      return '<div class="col-12 position-relative">\
+                <div class="card mb-4 position-relative card-data '+checkedClass+'" data-id="'+data.docid+'">\
+                  <div class="card-body">\
+                    <div class="row">\
+                      <div class="col-7">\
+                        <p class="card-text float-end">\
+                          <span class="fw-medium">Quiz ID:</span> '+data.docid+'\
+                        </p>\
+                        <h5 class="card-title mb-3">'+data.topic_label_de_fixed+'</h5>\
+                        <p class="card-text mt-1">\
+                          '+data.text+'\
+                        </p>\
+                        <ol class="answer-list">\
+                          <strong>Antworten:</strong> '+JSON.stringify(data.answers)+'\
+                        </ol>\
+                      </div>\
+                      <div class="col-5 border-left">\
+                        <!--<p class="card-text">\
+                          <span class="fw-medium">Question type:</span> \
+                          '+data.question_type_name+'\
+                        </p>-->\
+                        <p class="card-text">\
+                          <span class="fw-medium">Answer type:</span> \
+                          '+data.answer_type_name+'\
+                        </p>\
+                        <p class="card-text">\
+                          <span class="fw-medium">Variable:</span> \
+                          '+data.variable+'\
+                        </p>\
+                        <p class="card-text" style="display: none;">\
+                          <span class="fw-medium">Level Difficulty:</span> \
+                          '+data.level_difficulty+'\
+                        </p>\
+                        <p class="card-text">\
+                          <span class="fw-medium">Source:</span> \
+                          '+data.source+'\
+                        </p>\
+                        <p class="card-text">\
+                          <span class="fw-medium">Points:</span> \
+                          '+data.points+'\
+                        </p>\
+                        <div><button type="button" class="btn btn-info tooggle-graph">Toggle graph</button><div class="graph-container" id="graph-container-'+data.docid+'"></div></div>\
+                      </div>\
+                    </div>\
+                  </div>\
+                </div>\
+                  <div class="fs-3 p-3 myTooltip position-absolute bottom-0 end-0"\
+                    data-bs-toggle="tooltip" data-bs-placement="top"\
+                        data-bs-custom-class="custom-tooltip"\
+                        data-bs-title="Weist das Quiz irgendwelche Inkonsistenzen auf? Markieren Sie es!">\
+                    <svg fill="#000000" height="20px" width="20px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" \
+                       viewBox="0 0 447.514 447.514" xml:space="preserve">\
+                    <path fill="#c44444" d="M389.183,10.118c-3.536-2.215-7.963-2.455-11.718-0.634l-50.653,24.559c-35.906,17.409-77.917,16.884-113.377-1.418\
+                      c-38.094-19.662-83.542-18.72-120.789,2.487V20c0-11.046-8.954-20-20-20s-20,8.954-20,20v407.514c0,11.046,8.954,20,20,20\
+                      s20-8.954,20-20V220.861c37.246-21.207,82.694-22.148,120.789-2.487c35.46,18.302,77.47,18.827,113.377,1.418l56.059-27.18\
+                      c7.336-3.557,11.995-10.993,11.995-19.146V20.385C394.866,16.212,392.719,12.333,389.183,10.118z"/>\
+                  </svg>\
+                </div>\
+                <input class="form-check-input card-check" type="checkbox" id="selected_'+data.docid+'" value="1" data-id="'+data.docid+'" '+checked+' hidden>\
+              </div>'
+    }
+
+    function graphicRate(){
+      var id = '';
+      var colors = ['#e9a1c3','#6228ad','#757573','#ee105b','#2a0742'];
+      $('#results .card-data').each(function(index, item){
+        id = $(item).attr('data-id');
+        var graphId = 'graph-container-'+id;
+        var topics = dataJson[id].related_topics.map(item => item.topic);
+        var rates = dataJson[id].related_topics.map(item => item.rate);
+        var plotData = [{
+                type: 'bar',
+                x: topics,
+                y: rates,
+                marker: {}
+            }];
+        plotData[0].marker.color = plotData[0].y.map(function (v,i) {
+          return colors[i];
+        });
+        var layout = {
+                        width: 400,
+                        margin: {
+                          l: 20,
+                          r: 20,
+                          b: 150,
+                          t: 30,
+                        },
+                        // plot_bgcolor: '#c7c7c7',
+                        title: 'Topics vs Rates',
+                        font: {size: 10}
+                      };
+        var config = {responsive: true};
+
+        Plotly.newPlot(graphId, plotData, layout, config);
+
+      })
+    }
+
+    $(document).on('click', '.tooggle-graph', function(e) {
+      $(this).siblings().toggleClass('graph-container');
+    })
+
+    //Pagination
+    $(document).on('click','.page-item', function() {
+      var id = $(this).data('pagenum');
+      $('.page-item').removeClass('active');
+      $(this).addClass('active');
+      $('.page').addClass('d-none');
+      $('*[data-page='+id+']').removeClass('d-none');
+      $(window).scrollTop(0);
+      getBrowsedCards();
+    });
+
+    //Filter
+    $('#apply-filter').on('click', function( ) {
+      // var questionType = $('#question_type').val() == 'none' ? null : $('#question_type').val();
+      var questionType = null;
+      var answerType = $('#answer_type').val() == 'none' ? null : $('#answer_type').val();
+      var source = $('#source_filters').val() == 'none' ? null : $('#source_filters').val();
+      var topic = $('#topic_filters').val() == 'none' ? null : $('#topic_filters').val();
+      totalFilters = totalFilters + "{'questionType': "+questionType+", 'answerType':"+answerType+", 'source':"+source+", 'topic':"+topic+"},";
+      dataFiltered = jQuery.extend({}, dataJson);
+
+        $.each(dataJson, function(index, item, i) {
+          if (questionType !== null && item.question_type_name !== questionType) {
+            delete dataFiltered[index];
+          }
+          if (answerType !== null && item.answer_type_name !== answerType) {
+            delete dataFiltered[index];
+          }
+          if (source !== null && item.source !== source) {
+            delete dataFiltered[index];
+          }
+          if (topic !== null && item.topic_label_de_fixed !== topic) {
+            delete dataFiltered[index];
+          }
+        })
+
+      $('#results').html('');
+      paginationCards(dataFiltered);
+    });
+
+    $('#clear-filter').on('click', function( ) {
+      $('#results').html('');
+      // $('#question_type').val('none');
+      // $('#answer_type').val('none');
+      $('#fiters select').val('none');
+      dataFiltered = jQuery.extend({}, dataJson);
+      paginationCards(dataJson);
+    })
+
+    //Card selection
+    $(document).on('click', '.card-data', function() {
+      if(!$(this).hasClass('border-error')){
+        $(this).parent().find('.card-check').click();
+      }
+    });
+    $(document).on('click', '.card-data .tooggle-graph', function(e) {
+        e.stopPropagation();
+   });
+
+    $(document).on('change', 'input.form-check-input', function(){
+      $('input.form-check-input').removeClass('is-invalid')
+      $('#error').addClass('d-none');
+      dataJson[$(this).data('id')]['isSelected'] = this.checked;
+      selectedCards = this.checked ? selectedCards + 1 : selectedCards - 1;
+      if (selectedCards == 0) {
+        $('#submit').html('Gibt es nichts Relevantes? Vielen Dank für Ihr Feedback');
+      } else {
+        // $('#submit').html('Prüfung herunterladen');
+        $('#submit').html('Senden Sie das Quizformular');
+      }
+      var container = $(this).parent().find('.card');
+      if(container.hasClass('border-success')){
+        container.removeClass('border-success');
+      } else {
+        container.addClass('border-success');
+      }
+    });
+
+    //Tooltip
+    $(document).on('click', '.myTooltip', function(e) {
+      if(!$(this).siblings('.card').hasClass('border-success')){
+        $(this).siblings('.card').toggleClass('border-error')
+      }
+    });
+
+    //Submit
+    function validateInputs() {
+      if($('input.form-check-input:checked').length == 0) {
+        isFormValid = false;
+        $('input.form-check-input').addClass('is-invalid');
+
+      }
+    }
+
+    //Submit
+    function createHTMLcardsModal(data) {
+      var answer = ''
+      var checked = data.isSelected ? 'checked' : '';
+      var checkedClass = data.isSelected ? 'border-success' : '';
+      var topics = '';
+      var topicSection = '';
+
+
+      $.each(data.related_topics, function(index, item) {
+            topics = topics + '<span class="badge rounded-pill text-bg-info">'+item+'</span>';
+          })
+      if(data.related_topics != null){
+        topicSection = '<p class="card-text">\
+                                <span class="fw-medium">Related Topics:</span> \
+                                '+topics+'\
+                              </p>'
+                            } 
+
+
+      return '<div class="row p-3 align-items-center">\
+                <div class="col-10 card mb-4 position-relative card-data" data-id="'+data.docid+'">\
+                  <div class="card-body">\
+                    <div class="row">\
+                      <div class="col-7">\
+                        <p class="card-text float-end">\
+                          <span class="fw-medium">Quiz ID:</span> '+data.docid+'\
+                        </p>\
+                        <h5 class="card-title mb-3">'+data.topic_label_de_fixed+'</h5>\
+                        <p class="card-text mt-1">\
+                          '+data.text+'\
+                        </p>\
+                        <ol class="answer-list">\
+                          <strong>Antworten:</strong> '+JSON.stringify(data.answers)+'\
+                        </ol>\
+                      </div>\
+                      <div class="col-5 border-left">\
+                        <!--<p class="card-text">\
+                          <span class="fw-medium">Question type:</span> \
+                          '+data.question_type_name+'\
+                        </p>-->\
+                        <p class="card-text">\
+                          <span class="fw-medium">Answer type:</span> \
+                          '+data.answer_type_name+'\
+                        </p>\
+                        <p class="card-text">\
+                          <span class="fw-medium">Variable:</span> \
+                          '+data.variable+'\
+                        </p>\
+                        <p class="card-text" style="display: none;">\
+                          <span class="fw-medium">Level Difficulty:</span> \
+                          '+data.level_difficulty+'\
+                        </p>\
+                        <p class="card-text">\
+                          <span class="fw-medium">Source:</span> \
+                          '+data.source+'\
+                        </p>\
+                        <p class="card-text">\
+                          <span class="fw-medium">Points:</span> \
+                          '+data.points+'\
+                        </p>\
+                      </div>\
+                    </div>\
+                  </div>\
+                </div>\
+                <div class="col-2 text-center"><button type="button" class="btn btn-danger delete">\
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">\
+                    <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>\
+                  </svg>\
+                </button></div>\
+              </div>'
+    }
+
+    $(document).on('click', '.delete', function(){
+      var id = $(this).parent().siblings('.card').data('id');
+      finallyElements = jQuery.grep(elements, function(item) {
+        return item != id;
+      });
+      $(this).parent().parent().remove();
+    })
+
+    $('#submit').on('click', function() { 
+      var cardsModal = '';
+      isFormValid = true;
+      validateInputs();
+      $('.modal-body-cards').html('');
+        $.each($('input.form-check-input:checked'), function(index, item){
+          var id = $(item).data('id');
+          elements.push(id);
+          // idsArray = jQuery.grep(idsArray, function(item) {
+          //   return item != id;
+          // });
+          // jsonComplete.push(dataJson[id])
+          cardsModal = cardsModal + createHTMLcardsModal(dataJson[id])
+          $('.modal-body-cards').html(cardsModal);
+        })
+        finallyElements = elements;
+        modal.show();
+    })
+
+    $('#download').on('click', function(){
+      var json = '';
+      var jsonComplete = [];
+      var endDate = new Date()
+      var secondsBetween = Math.floor((endDate.getTime() - startDate.getTime())/1000); 
+      var filters = totalFilters != '' ? '['+totalFilters +']' : 'filters: []';
+      var intent = $('#intent').val();
+
+      if($('#stars-value').val()!='' && $('#intent').val()!=''){
+        $.each(finallyElements, function(index, i){
+          idsArray = jQuery.grep(idsArray, function(item) {
+              return item != i;
+            });
+            jsonComplete.push(dataJson[i])
+        })
+        json = '{query: "'+query+'", relevant_ids: '+JSON.stringify(finallyElements)+', irrelevant_ids: '+ JSON.stringify(idsArray) +', filters: '+filters+', seconds: '+secondsBetween+', timestamp: "'+endDate.toLocaleString('en-US', {timeZone: 'America/Los_Angeles',})+'", intent: '+ intent +'}'
+          $('#results').html('');
+          $('#question_type').val('none');
+          $('#answer_type').val('none');
+          $('#input-search').val('');
+
+          var myHeaders = new Headers();
+          myHeaders.append("Content-Type", "application/json");
+          myHeaders.append("x-access-token", localStorage.getItem("token"));
+
+          var raw = JSON.stringify({'json':json, 'jsonComplete':jsonComplete, 'feedback': {'user_id': localStorage.getItem("user_id"), 'value': $(".value-stars").val()}, 'browsed_cards': browsedCards});
+
+          var requestOptions = {
+            method: 'POST',
+            headers: myHeaders,
+            body: raw,
+            redirect: 'follow'
+          };
+
+          console.log('raw', raw)
+          console.log('requestOptions',requestOptions)
+          fetch("../response", requestOptions)
+            .then(response => response.text())
+            .then(data => {
+                    var link = document.createElement('a');
+                    link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(jsonComplete));
+                    link.download = "export.json";
+                    if(finallyElements.length){
+                      link.click();
+                    }
+                    $('#text').css('max-height','fit-content');
+                    $('.pagination').html('');
+                    $('#question_type').html('');
+                    $('#answer_type').html('');
+                    $('#fiters').hide();
+                    // char.destroy();
+                    $('.value-stars').val('');
+                    $('img.star').attr('src','./static/images/star-off.png');
+                    $('#submit').hide();
+                    modal.hide();
+                  })
+                  .catch(error => {
+                    console.log('error')
+                    alert(error)
+                  });
+
+
+
+        // var link = document.createElement('a');
+        // link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(jsonComplete));
+        // link.download = "export.json";
+        // link.click();
+        // $('#text').css('max-height','fit-content');
+        // $('.pagination').html('');
+        // $('#question_type').html('');
+        // $('#answer_type').html('');
+        // $('#fiters').hide();
+        // modal.hide();
+
+
+
+
+      } else {
+        if($('#stars-value').val()=='') {
+          $('.stars-container').parent().addClass('error')
+        };
+        if($('#intent').val()==''){
+          $('#intent').addClass('error')
+        };
+      }
+    })
+
+    //Logout
+    $('#logout').on('click', function(){
+      localStorage.setItem("token", "");
+      localStorage.setItem("user_id", "");
+      location.href = './login.html';
+    })
+
+    //General
+
+    $('input').on('input', function(){
+      $(this).removeClass('is-invalid');
+    })
+
+    //Stars
+   function setStarsAccordingToValue(val, self) {
+      var valueSplit = val.toString().split(".")
+      if (valueSplit.length == 1) {
+         for (var i = 1; i <= valueSplit[0]; i++) {
+            self.find("[data-id='" + i + "']").attr("src", "./static/images/star-on.png")
+         }
+      } else {
+         for (var i = 1; i <= valueSplit[0]; i++) {
+            self.find("[data-id='" + i + "']").attr("src", "./static/images/star-half.png")
+         }
+         var id = parseInt(valueSplit[0]) + 1
+         self.find("[data-id='" + id + "']").attr("src", "./static/images/star-off.png")
+      }
+   }
+   $(document).on("mousemove", ".star", function (e) {
+      var startNo = $(this).attr("data-id")
+      var positionX = e.pageX - $(this).offset().left;
+      $(this).parent(".stars-container").find(".star").attr("src", "./static/images/star-off.png")
+      for (var i = 1; i <= startNo - 1; i++) {
+         $(this).siblings("[data-id='" + i + "']").attr("src", "./static/images/star-on.png")
+      }
+      if (positionX < 3) {
+         $(this).attr("src", "./static/images/star-off.png")
+      } else if (positionX < 12) {
+         $(this).attr("src", "./static/images/star-half.png")
+      } else {
+         $(this).attr("src", "./static/images/star-on.png")
+      }
+   })
+   //##########
+   $(document).on("click", ".star", function (e) {
+      var positionX = e.pageX - $(this).offset().left;
+      var value = $(this).attr("data-id");
+      $(this).parent().parent().removeClass('error');
+      if (positionX < 12) {
+         value = value - 0.5
+      }
+      $(this).siblings(".value-stars").val(value);
+      
+      setStarsAccordingToValue(value, $(this))
+   })
+
+   $(document).on("mouseleave", ".stars-container", function () {
+      var valueSplit = $(this).find(".value-stars").val()
+      $(this).find(".star").attr("src", "./static/images/star-off.png")
+      setStarsAccordingToValue(valueSplit, $(this))
+   })
+   $(document).on("mouseenter", ".stars-container", function () {
+      $(this).find(".star").attr("src", "./static/images/star-off.png")
+   })
+
+   // $(document).on("mouseenter",".stars-container, .doc-info, .title-list, .justify-textarea", function() {
+   //    var id =  $(this).attr('id')
+   //    var string = "(" + id + ", " + moment().format('MM/DD/YYYY hh:mm:ss')
+   //    movementMouse = movementMouse.concat(string)
+   //  });
+   //  $(document).on("mouseleave",".stars-container, .doc-info, .title-list, .justify-textarea", function() {
+   //    var id =  $(this).attr('id')
+   //    var string = ", " + moment().format('MM/DD/YYYY hh:mm:ss') + "),"
+   //    movementMouse = movementMouse.concat(string)
+   //  });
+
+    // Stars
+   function setStarsAccordingToValue(val, self) {
+      var valueSplit = val.toString().split(".")
+      if (valueSplit.length == 1) {
+         for (var i = 1; i <= valueSplit[0]; i++) {
+            self.find("[data-id='" + i + "']").attr("src", "./static/images/star-on.png")
+         }
+      } else {
+         for (var i = 1; i <= valueSplit[0]; i++) {
+            self.find("[data-id='" + i + "']").attr("src", "./static/images/star-on.png")
+         }
+         var id = parseInt(valueSplit[0]) + 1
+         self.find("[data-id='" + id + "']").attr("src", "./static/images/star-half.png")
+      }
+   }
+   $(document).on("mousemove", ".star", function (e) {
+      var startNo = $(this).attr("data-id")
+      var positionX = e.pageX - $(this).offset().left;
+      $(this).parent(".stars-container").find(".star").attr("src", "./static/images/star-off.png")
+      for (var i = 1; i <= startNo - 1; i++) {
+         $(this).siblings("[data-id='" + i + "']").attr("src", "./static/images/star-on.png")
+      }
+      if (positionX < 3) {
+         $(this).attr("src", "./static/images/star-off.png")
+      } else if (positionX < 12) {
+         $(this).attr("src", "./static/images/star-half.png")
+      } else {
+         $(this).attr("src", "./static/images/star-on.png")
+      }
+   })
+   $(document).on("click", ".star", function (e) {
+      var positionX = e.pageX - $(this).offset().left;
+      var value = $(this).attr("data-id");
+      $(this).parent().parent().removeClass('error');
+      if (positionX < 12) {
+         value = value - 0.5
+      }
+      $(this).siblings(".value-stars").val(value);
+      // if(value > 1 ){
+      //    $(this).parent().parent().siblings('.select-text').show();
+      //    $(this).parent().parent().siblings('.select-text.container-question').addClass('question');
+      //    $(this).parent().parent().parent().siblings('.box').addClass('argument clickable');
+      // }else{
+      //    $(this).parent().parent().siblings('.select-text').hide();
+      //    $(this).parent().parent().siblings('.select-text.container-question').removeClass('question');
+      //    $(this).parent().parent().siblings('.select-text.container-question').find('input').val('');
+      //    $(this).parent().parent().siblings('.list-selected').html('');
+      //    $(this).parent().parent().parent().siblings('.box').removeClass('argument clickable');
+      // }
+      setStarsAccordingToValue(value, $(this))
+   })
+
+    $(document).on("mouseleave", ".stars-container", function () {
+      var valueSplit = $(this).find(".value-stars").val()
+      $(this).find(".star").attr("src", "./static/images/star-off.png")
+      setStarsAccordingToValue(valueSplit, $(this))
+   })
+   $(document).on("mouseenter", ".stars-container", function () {
+      $(this).find(".star").attr("src", "./static/images/star-off.png")
+   })
+
+   // end Stars
+
+  </script>
+</body>
+</html>
